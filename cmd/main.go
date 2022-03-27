@@ -1,26 +1,26 @@
 package main
 
 import (
-	"net/http"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type word struct {
-	ID string `json:"id"`
+	ID    string `json:"id"`
 	Entry string `json:"entry"`
 }
 
-var words = []word {
+var words = []word{
 	{
-		ID: "ab-1",
+		ID:    "ab-1",
 		Entry: "ab, a",
 	},
 	{
-		ID: "ad-1",
+		ID:    "ad-1",
 		Entry: "ad",
 	},
 	{
-		ID: "ex-1",
+		ID:    "ex-1",
 		Entry: "ex, e",
 	},
 }
@@ -35,5 +35,3 @@ func main() {
 
 	router.Run("localhost:8080")
 }
-
-
