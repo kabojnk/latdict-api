@@ -1,0 +1,70 @@
+# Note to self because I keep mixing up the two:
+#    - expose === to other docker containers
+#    - ports === to the outside world
+version: '3'
+services:
+  api:
+    image: golang:1.18.0-alpine
+    restart: always
+    expose:
+      - "8000"
+    # volumes:
+    #   - ./latdict-api:/home/latdict/app
+    depends_on:
+      - redis
+      - postgres
+    links:
+      - redis
+      - postgres
+    # deploy:
+    #   mode: replicated
+    #   replicas: 3
+
+  # redis server
+  redis:
+    image: redis:alpine
+    restart: always
+    # deploy:
+    #   mode: replicated
+    #   replicas: 3
+
+  # nginx
+  nginx-proxy:
+    restart: always
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/etc/nginx/vhost.d"
+      - "/usr/share/nginx/html"
+      - "/var/run/docker.sock:/tmp/docker.sock:ro"
+      - "/etc/nginx/certs"
+    depends_on:
+      - api
+
+  # nginx letsencrypt
+  letsencrypt-nginx-proxy-companion:
+    restart: always
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    volumes_from:
+      - "nginx-proxy"
+  # postgres
+  postgres:
+    restart: always
+    image: postgres:14.2-alpine
+
+    # Mount an initialization script and the persistent postgresql data volume
+    volumes:
+      - ./docker-data/postgres/latdict_20220326.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./volumes/postgres/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_USER:-password}
+      POSTGRES_DB: ${POSTGRES_USER:-latdict}
+    expose:
+      - "5432"
+    ports:
+      - "${POSTGRES_EXTERNAL_PORT:-54320}:5432"
