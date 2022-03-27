@@ -61,9 +61,9 @@ services:
       - ./volumes/postgres/data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_USER:-password}
-      - POSTGRES_DB=${POSTGRES_USER:-latdict}
-      - POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256"
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-latdict}
+      - POSTGRES_INITDB_ARGS="--auth-host=${POSTGRES_AUTH_HOST:-md5}"
     expose:
       - "5432"
     ports:
