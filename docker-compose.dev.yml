@@ -39,7 +39,7 @@ services:
       - "/etc/nginx/vhost.d"
       - "/usr/share/nginx/html"
       - "/var/run/docker.sock:/tmp/docker.sock:ro"
-      - "/etc/nginx/certs"
+      - nginx_certs:/etc/nginx/certs
     depends_on:
       - api
 
@@ -49,8 +49,7 @@ services:
     image: jrcs/letsencrypt-nginx-proxy-companion
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    volumes_from:
-      - "nginx-proxy"
+      - nginx_certs
   # postgres
   postgres:
     restart: always
@@ -61,10 +60,13 @@ services:
       - ./docker-data/postgres/latdict_20220326.sql:/docker-entrypoint-initdb.d/init.sql
       - ./volumes/postgres/data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_USER:-password}
-      POSTGRES_DB: ${POSTGRES_USER:-latdict}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_USER:-password}
+      - POSTGRES_DB=${POSTGRES_USER:-latdict}
+      - POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256"
     expose:
       - "5432"
     ports:
       - "${POSTGRES_EXTERNAL_PORT:-54320}:5432"
+volumes:
+  nginx_certs:
