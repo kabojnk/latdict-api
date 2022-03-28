@@ -45,25 +45,32 @@ func (client *DBClient) Close() {
 	}
 }
 
-func (client *DBClient) GetEntries(pagination Pagination, filter QueryFilter) []Entry {
+func (client *DBClient) GetEntries(pagination Pagination, filter QueryFilter) []APIEntry {
 	client.Open()
 	pageSize := pagination.PageSize
 	if pageSize == 0 {
 		pageSize = DEFAULT_PAGE_SIZE
 	}
-	rows, err := client.DB.Queryx("SELECT * FROM entries LIMIT ? OFFSET ?", pagination.PageSize, pagination.PageNum*pagination.PageSize)
+	rows, err := client.DB.Queryx("SELECT * FROM entries LIMIT $1 OFFSET $2", pageSize, pagination.PageNum*pageSize)
 	if err != nil {
 		panic(err)
 	}
 	defer rows.Close()
-	entries := []Entry{}
+	var entries []APIEntry
 	for rows.Next() {
-		entry := Entry{}
-		err := rows.StructScan(&entry)
+		dbEntry := DBEntry{}
+		err := rows.StructScan(&dbEntry)
 		if err != nil {
 			panic(err)
 		}
-		entries = append(entries, entry)
+		orthography := dbEntry.Orthography.String
+		entries = append(entries, APIEntry{
+			UUID:             dbEntry.UUID,
+			Lemma:            dbEntry.Lemma,
+			CommonalityScore: dbEntry.CommonalityScore,
+			Speech:           dbEntry.Speech,
+			Orthography:      orthography,
+		})
 	}
 	client.Close()
 	return entries

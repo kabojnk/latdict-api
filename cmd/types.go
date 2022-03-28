@@ -1,6 +1,15 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"database/sql"
+	"github.com/gin-gonic/gin"
+)
+
+/**
+ * A note on the DB* and API* model dichotomy: these separate models because they might need to change between what is
+ * pulled from the DB and what is ultimately sent to the API. This could mean omitting some fields, or in cases of
+ * fields of `sql.Null*` types, we don't want to flatten the structure of those values with defaults.
+ */
 
 type Pagination struct {
 	PageNum       int `json:"pageNum"`
@@ -20,8 +29,17 @@ type QueryFilter struct {
 	Genders       []string `json:"genders"`
 }
 
-type Entry struct {
-	Id               string `json:"id"`
+type DBEntry struct {
+	ID               string         `json:"id"`
+	UUID             string         `json:"uuid"`
+	Lemma            string         `json:"lemma"`
+	CommonalityScore int            `json:"commonalityScore" db:"commonality_score"`
+	Orthography      sql.NullString `json:"orthography"`
+	Speech           string         `json:"speech"`
+}
+
+type APIEntry struct {
+	UUID             string `json:"uuid"`
 	Lemma            string `json:"lemma"`
 	CommonalityScore int    `json:"commonalityScore" db:"commonality_score"`
 	Orthography      string `json:"orthography"`
