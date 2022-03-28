@@ -63,7 +63,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
       - POSTGRES_DB=${POSTGRES_DB:-latdict}
-      - POSTGRES_INITDB_ARGS="--auth-host=${POSTGRES_AUTH_HOST:-md5}"
     expose:
       - "5432"
     ports:
