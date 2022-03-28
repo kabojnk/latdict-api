@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"time"
 )
 
@@ -24,6 +25,7 @@ func (client *DBClient) Open() {
 		shouldEnableSSL = "enable"
 	}
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", client.Config.Host, client.Config.Port, client.Config.User, client.Config.Password, client.Config.DBName, shouldEnableSSL)
+	fmt.Println(dsn)
 	pqDb, pqErr := sqlx.Open("postgres", dsn)
 	if pqErr != nil {
 		panic(pqErr)

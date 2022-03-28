@@ -15,10 +15,10 @@ type DBConfig struct {
 }
 
 func (dbConfig *DBConfig) Init() {
-	dbConfig.Host = os.Getenv("DB_HOST")
-	dbConfig.Port = os.Getenv("DB_PORT")
-	dbConfig.User = os.Getenv("DB_USER")
-	dbConfig.Password = os.Getenv("DB_PASSWORD")
-	dbConfig.DBName = os.Getenv("DB_NAME")
-	dbConfig.SSLModeDisable, _ = strconv.ParseBool(os.Getenv("DB_SSL_MODE_DISABLE"))
+	dbConfig.Host = os.Getenv("POSTGRES_HOST")
+	dbConfig.Port = os.Getenv("POSTGRES_PORT")
+	dbConfig.User = os.Getenv("POSTGRES_USER")
+	dbConfig.Password = os.Getenv("POSTGRES_PASSWORD")
+	dbConfig.DBName = os.Getenv("POSTGRES_NAME")
+	dbConfig.SSLModeDisable, _ = strconv.ParseBool(os.Getenv("POSTGRES_SSL_MODE_DISABLE"))
 }
