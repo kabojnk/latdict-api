@@ -6,6 +6,8 @@ import (
 )
 
 /**
+ * Contains genera models for use with the API.
+
  * A note on the DB* and API* model dichotomy: these separate models because they might need to change between what is
  * pulled from the DB and what is ultimately sent to the API. This could mean omitting some fields, or in cases of
  * fields of `sql.Null*` types, we don't want to flatten the structure of those values with defaults.
@@ -15,18 +17,6 @@ type Pagination struct {
 	PageNum       int `json:"pageNum"`
 	PageSize      int `json:"pageSize"`
 	TotalNumPages int `json:"TotalNumPages"`
-}
-
-type QueryFilter struct {
-	QueryText     string   `json:"query"`
-	PartsOfSpeech []string `json:"partsOfSpeech"`
-	Ages          []string `json:"ages"`
-	Commonalities []string `json:"commonality"`
-	Geographies   []string `json:"geographies"`
-	Conjugations  []string `json:"conjugations"`
-	Voices        []string `json:"voices"`
-	Declensions   []string `json:"declensions"`
-	Genders       []string `json:"genders"`
 }
 
 type DBEntry struct {

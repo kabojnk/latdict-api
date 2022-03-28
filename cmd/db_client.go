@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/kabojnk/latdict-api/query_filter"
 	_ "github.com/lib/pq"
 	"time"
 )
@@ -45,12 +46,13 @@ func (client *DBClient) Close() {
 	}
 }
 
-func (client *DBClient) GetEntries(pagination Pagination, filter QueryFilter) []APIEntry {
+func (client *DBClient) GetEntries(pagination Pagination, filter query_filter.QueryFilter) []APIEntry {
 	client.Open()
 	pageSize := pagination.PageSize
 	if pageSize == 0 {
 		pageSize = DEFAULT_PAGE_SIZE
 	}
+	fmt.Printf("%#v\n", filter)
 	rows, err := client.DB.Queryx("SELECT * FROM entries LIMIT $1 OFFSET $2", pageSize, pagination.PageNum*pageSize)
 	if err != nil {
 		panic(err)
