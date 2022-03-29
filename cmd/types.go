@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"github.com/gin-gonic/gin"
 )
 
 /**
@@ -28,7 +27,13 @@ type DBEntry struct {
 	Speech           string         `json:"speech"`
 }
 
-type APIEntry struct {
+type EntriesResponse struct {
+	Pagination Pagination `json:"pagination"`
+	Items      []Entry    `json:"items"`
+}
+
+// Entry A lexicon entry provided for an API output
+type Entry struct {
 	UUID             string `json:"uuid"`
 	Lemma            string `json:"lemma"`
 	CommonalityScore int    `json:"commonalityScore" db:"commonality_score"`
@@ -36,9 +41,17 @@ type APIEntry struct {
 	Speech           string `json:"speech"`
 }
 
-type Route struct {
-	Path    string
-	Handler gin.HandlerFunc
+// DBSearchKeyResult A DB query result on a search_keys table, ultimately used in returning lexicon entries
+type DBSearchKeyResult struct {
+	TotalResults     int    `db:"total_results"`
+	EntryID          int    `db:"entry_id"`
+	SearchKey        string `db:"search_key"`
+	CommonalityScore int    `db:"commonality_score"`
+	ID               int    `db:"id"`
+	FullMatch        int    `db:"full_match"`
+	StartingMatch    int    `db:"starting_match"`
+	PartialMatch     int    `db:"partial_match"`
+	SearchKeyLength  int    `db:"search_key_length"`
 }
 
 //
