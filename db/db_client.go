@@ -1,9 +1,10 @@
-package main
+package db
 
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/kabojnk/latdict-api/query_filter"
+	"github.com/kabojnk/latdict-api/types"
 	_ "github.com/lib/pq"
 	"time"
 )
@@ -46,28 +47,29 @@ func (client *DBClient) Close() {
 }
 
 // GetEntries Gets a list of entries from the lexicon.
-func (client *DBClient) GetEntries(pagination Pagination, filter query_filter.QueryFilter) ([]Entry, int) {
+func (client *DBClient) GetEntries(pagination types.Pagination, filter query_filter.QueryFilter) ([]types.Entry, int) {
 	client.Open()
 	totalResults := 0
 	rows, err := client.queryBasedOnFilterAndPagination(filter, pagination)
 	if err != nil {
 		panic(err)
 	}
-	var entries []Entry
+	var entries []types.Entry
 	defer rows.Close()
 	for rows.Next() {
-		searchKeyResult := DBSearchKeyResult{}
+		searchKeyResult := types.DBSearchKeyResult{}
 		err := rows.StructScan(&searchKeyResult)
 		if err != nil {
 			panic(err)
 		}
-		// Query entry
+		// Query entry -- don't get any extra data. Senses will be appended in a separate group query
 		dbEntry := client.GetEntryByID(searchKeyResult.EntryID)
 		if totalResults == 0 {
 			totalResults = searchKeyResult.TotalResults
 		}
 		orthography := dbEntry.Orthography.String
-		entries = append(entries, Entry{
+		entries = append(entries, types.Entry{
+			ID:               dbEntry.ID,
 			UUID:             dbEntry.UUID,
 			Lemma:            dbEntry.Lemma,
 			CommonalityScore: dbEntry.CommonalityScore,
@@ -80,8 +82,8 @@ func (client *DBClient) GetEntries(pagination Pagination, filter query_filter.Qu
 }
 
 // GetEntryByID Gets an entry by its PK
-func (client *DBClient) GetEntryByID(entryId int) DBEntry {
-	dbEntry := DBEntry{}
+func (client *DBClient) GetEntryByID(entryId int) types.DBEntry {
+	dbEntry := types.DBEntry{}
 	row := client.DB.QueryRowx(`select * 
 		from entries 
 		WHERE id = $1`, entryId)
@@ -92,8 +94,98 @@ func (client *DBClient) GetEntryByID(entryId int) DBEntry {
 	return dbEntry
 }
 
+func (client *DBClient) GetEntryByUUID(entryUUID string) types.DBEntry {
+	fmt.Printf("entry UUID: %v\n================\n", client)
+	client.Open()
+	dbEntry := types.DBEntry{}
+	row := client.DB.QueryRowx(`select * 
+		from entries 
+		WHERE uuid = $1`, entryUUID)
+	err := row.StructScan(&dbEntry)
+	if err != nil {
+		panic(err)
+	}
+	client.Close()
+	return dbEntry
+}
+
+func (client *DBClient) GetSensesForEntryIDs(entryIDs []int) map[int][]types.Sense {
+	var sensesMap map[int][]types.Sense
+	client.Open()
+	query, args, err := sqlx.In(`select * from senses where entry_id in($1)`, entryIDs)
+	if err != nil {
+		panic(err)
+	}
+	query = client.DB.Rebind(query)
+	rows, err := client.DB.Queryx(query, args)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		sense := types.Sense{}
+		err := rows.StructScan(&sense)
+		if err != nil {
+			panic(err)
+		}
+		sensesMap[sense.EntryID] = append(sensesMap[sense.EntryID], sense)
+	}
+	client.Close()
+	return sensesMap
+}
+
+func (client *DBClient) GetAdditionalInfoForEntryIDs(entryIDs []int) map[int][]types.AdditionalInfo {
+	var additionalInfoMap map[int][]types.AdditionalInfo
+	client.Open()
+	query, args, err := sqlx.In(`select * from entry_additional_info where entry_id in($1)`, entryIDs)
+	if err != nil {
+		panic(err)
+	}
+	query = client.DB.Rebind(query)
+	rows, err := client.DB.Queryx(query, args)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		additionalInfo := types.AdditionalInfo{}
+		err := rows.StructScan(&additionalInfo)
+		if err != nil {
+			panic(err)
+		}
+		additionalInfoMap[additionalInfo.EntryID] = append(additionalInfoMap[additionalInfo.EntryID], additionalInfo)
+	}
+	client.Close()
+	return additionalInfoMap
+}
+
+func (client *DBClient) GetGrammarValuesForEntryIDs(entryIDs []int) map[int][]types.GrammarValues {
+	var grammarValuesMap map[int][]types.GrammarValues
+	client.Open()
+	query, args, err := sqlx.In(`select * from entry_grammar_values where entry_id in($1)`, entryIDs)
+	if err != nil {
+		panic(err)
+	}
+	query = client.DB.Rebind(query)
+	rows, err := client.DB.Queryx(query, args)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		grammarValuesRow := types.GrammarValues{}
+		err := rows.StructScan(&grammarValuesRow)
+		if err != nil {
+			panic(err)
+		}
+		grammarValuesMap[grammarValuesRow.EntryID] = append(grammarValuesMap[grammarValuesRow.EntryID], grammarValuesRow)
+	}
+	client.Close()
+	return grammarValuesMap
+}
+
 // Performs a SQL query based on filter and pagination data and returns the result (or errors)
-func (client *DBClient) queryBasedOnFilterAndPagination(filter query_filter.QueryFilter, pagination Pagination) (*sqlx.Rows, error) {
+func (client *DBClient) queryBasedOnFilterAndPagination(filter query_filter.QueryFilter, pagination types.Pagination) (*sqlx.Rows, error) {
 
 	table := "latin"
 	if filter.Language == "english" {

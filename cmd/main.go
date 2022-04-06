@@ -12,5 +12,6 @@ func main() {
 	}
 	router := gin.Default()
 	router.GET("/entries", getEntries)
+	router.GET("/entries/:entryUUID", getEntry)
 	router.Run("localhost:8000")
 }

@@ -1,8 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/kabojnk/latdict-api/cache"
+	"github.com/kabojnk/latdict-api/db"
+	"github.com/kabojnk/latdict-api/entry_filter"
 	"github.com/kabojnk/latdict-api/query_filter"
+	"github.com/kabojnk/latdict-api/types"
 	"net/http"
 	"strconv"
 )
@@ -10,14 +15,15 @@ import (
 const DEFAULT_PAGE_SIZE = 20
 const MAX_PAGE_SIZE = 200
 
+// Gets all entries that matches a particular search filter
 func getEntries(c *gin.Context) {
 
-	client := DBClient{}
+	client := db.DBClient{}
 	client.Init()
 	filter := query_filter.QueryFilter{}
 	queryString := c.Request.URL.Query()
 	filter.InitWithQueryString(queryString)
-	pagination := Pagination{}
+	pagination := types.Pagination{}
 	pagination.PageNum, _ = strconv.Atoi(queryString.Get("page"))
 	pagination.PageSize, _ = strconv.Atoi(queryString.Get("pageSize"))
 	if pagination.PageSize == 0 {
@@ -25,11 +31,74 @@ func getEntries(c *gin.Context) {
 	} else if pagination.PageSize > MAX_PAGE_SIZE {
 		pagination.PageSize = MAX_PAGE_SIZE
 	}
+	searchCache := cache.SearchCache{}
+	var response types.EntriesResponse
+	if searchCache.IsEnabled() {
+		searchCache.Open()
+		response, err := searchCache.GetCache(filter.Language, filter.QueryText, filter.NeedsExactMatch, pagination.PageNum, pagination.PageSize)
+		if err != nil {
+			fmt.Printf("Unable to find cache. Getting value from DB...")
+			response = getEntriesFromDB(client, pagination, filter)
+			searchCache.SaveCache(filter.Language, filter.QueryText, filter.NeedsExactMatch, pagination.PageNum, pagination.PageSize, response)
+		} else {
+			fmt.Printf("Found cached response and returning it.")
+		}
+		searchCache.Close()
+	} else {
+		response = getEntriesFromDB(client, pagination, filter)
+	}
+	client.Close()
+	c.IndentedJSON(http.StatusOK, response)
+}
+
+func getEntriesFromDB(client db.DBClient, pagination types.Pagination, filter query_filter.QueryFilter) types.EntriesResponse {
 	entries, totalEntries := client.GetEntries(pagination, filter)
 	pagination.TotalNumPages = totalEntries
-	response := EntriesResponse{
+	// @TODO: See if this is more performant than doing a single loop with single SQL queries, or something where we
+	//        can get by with one less loop without violating some of Go's mutation limitations.
+	if filter.IncludeSenses {
+		fmt.Printf("Include senses: %t", filter.IncludeSenses)
+		var entryIDs []int
+		for _, entry := range entries {
+			entryIDs = append(entryIDs, entry.ID)
+		}
+		sensesMap := client.GetSensesForEntryIDs(entryIDs)
+		for i, entry := range entries {
+			entries[i].Senses = sensesMap[entry.ID]
+		}
+	}
+	response := types.EntriesResponse{
 		Pagination: pagination,
 		Items:      entries,
 	}
-	c.IndentedJSON(http.StatusOK, response)
+	return response
+}
+
+func getEntry(c *gin.Context) {
+	var entryURI types.EntryURI
+	if err := c.ShouldBindUri(&entryURI); err != nil {
+		c.JSON(400, gin.H{"message": err})
+		return
+	}
+	client := db.DBClient{}
+	client.Init()
+	filter := entry_filter.EntryFilter{}
+	queryString := c.Request.URL.Query()
+	filter.InitWithQueryString(queryString)
+
+	dbEntry := client.GetEntryByUUID(entryURI.EntryUUID)
+	orthography := dbEntry.Orthography.String
+	entry := types.Entry{
+		ID:               dbEntry.ID,
+		UUID:             dbEntry.UUID,
+		Lemma:            dbEntry.Lemma,
+		CommonalityScore: dbEntry.CommonalityScore,
+		Speech:           dbEntry.Speech,
+		Orthography:      orthography,
+	}
+	if filter.IncludeSenses {
+		
+	}
+
+	c.IndentedJSON(http.StatusOK, entry)
 }
