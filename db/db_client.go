@@ -124,7 +124,7 @@ func (client *DBClient) GetSensesForEntryIDs(entryIDs []int) map[int][]types.Sen
 	sensesMap := make(map[int][]types.Sense)
 	fmt.Printf("Entry IDs: %v\n", entryIDs)
 	client.Open()
-	rows, err := client.DB.Queryx("select * from senses where entry_id = any($1)", pq.Array(entryIDs))
+	rows, err := client.DB.Queryx("select * from senses where entry_id = any($1) order by senses.order ASC", pq.Array(entryIDs))
 	if err != nil {
 		panic(err)
 	}
@@ -141,54 +141,27 @@ func (client *DBClient) GetSensesForEntryIDs(entryIDs []int) map[int][]types.Sen
 	return sensesMap
 }
 
-func (client *DBClient) GetAdditionalInfoForEntryIDs(entryIDs []int) map[int][]types.AdditionalInfo {
-	var additionalInfoMap map[int][]types.AdditionalInfo
+func (client *DBClient) GetAdditionalInfoForEntryID(entryID int) types.DBAdditionalInfo {
+	var additionalInfo types.DBAdditionalInfo
 	client.Open()
-	query, args, err := sqlx.In(`select * from entry_additional_info where entry_id in($1)`, entryIDs)
+	row := client.DB.QueryRowx("select * from entry_additional_info where entry_id = $1", entryID)
+	err := row.StructScan(&additionalInfo)
 	if err != nil {
 		panic(err)
-	}
-	query = client.DB.Rebind(query)
-	rows, err := client.DB.Queryx(query, args)
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		additionalInfo := types.AdditionalInfo{}
-		err := rows.StructScan(&additionalInfo)
-		if err != nil {
-			panic(err)
-		}
-		additionalInfoMap[additionalInfo.EntryID] = append(additionalInfoMap[additionalInfo.EntryID], additionalInfo)
 	}
 	client.Close()
-	return additionalInfoMap
+	return additionalInfo
 }
 
-func (client *DBClient) GetGrammarValuesForEntryIDs(entryIDs []int) map[int][]types.GrammarValues {
-	var grammarValuesMap map[int][]types.GrammarValues
+func (client *DBClient) GetGrammarValuesForEntryIDs(entryID int) []types.DBGrammarValues {
+	var grammarValues []types.DBGrammarValues
 	client.Open()
-	query, args, err := sqlx.In(`select * from entry_grammar_values where entry_id in($1)`, entryIDs)
+	err := client.DB.Select(&grammarValues, "select * from entry_grammar_values where entry_id = $1", entryID)
 	if err != nil {
 		panic(err)
-	}
-	query = client.DB.Rebind(query)
-	rows, err := client.DB.Queryx(query, args)
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		grammarValuesRow := types.GrammarValues{}
-		err := rows.StructScan(&grammarValuesRow)
-		if err != nil {
-			panic(err)
-		}
-		grammarValuesMap[grammarValuesRow.EntryID] = append(grammarValuesMap[grammarValuesRow.EntryID], grammarValuesRow)
 	}
 	client.Close()
-	return grammarValuesMap
+	return grammarValues
 }
 
 // Performs a SQL query based on filter and pagination data and returns the result (or errors)

@@ -98,8 +98,35 @@ func getEntry(c *gin.Context) {
 	fmt.Printf("EntryID: %d\n", dbEntry.ID)
 	if filter.IncludeSenses {
 		senses := client.GetSenseForEntryID(dbEntry.ID)
-		fmt.Printf("senses: %v\n", senses)
-		//entry.Senses = senses[dbEntry.ID]
+		entry.Senses = senses
+	}
+	if filter.IncludeGrammarInfo {
+		dbGrammarValues := client.GetGrammarValuesForEntryIDs(dbEntry.ID)
+		var apiGrammarValues []types.APIGrammarValues
+		for _, dbGrammarValue := range dbGrammarValues {
+			apiGrammarValues = append(apiGrammarValues, types.APIGrammarValues{
+				ID:         dbGrammarValue.ID,
+				EntryID:    dbGrammarValue.EntryID,
+				UUID:       dbGrammarValue.UUID,
+				GrammarKey: dbGrammarValue.GrammarKey,
+				Value:      dbGrammarValue.Value.String,
+			})
+		}
+		entry.GrammarValues = apiGrammarValues
+	}
+	if filter.IncludeAdditionalInfo {
+		dbAdditionalInfo := client.GetAdditionalInfoForEntryID(dbEntry.ID)
+		apiAdditionalInfo := types.APIAdditionalInfo{
+			ID:        dbAdditionalInfo.ID,
+			UUID:      dbAdditionalInfo.UUID,
+			EntryID:   dbAdditionalInfo.EntryID,
+			Age:       dbAdditionalInfo.Age.String,
+			Context:   dbAdditionalInfo.Context.String,
+			Frequency: dbAdditionalInfo.Frequency.String,
+			Geography: dbAdditionalInfo.Geography.String,
+			Source:    dbAdditionalInfo.Source.String,
+		}
+		entry.AdditionalInfo = apiAdditionalInfo
 	}
 
 	c.IndentedJSON(http.StatusOK, entry)

@@ -19,15 +19,15 @@ type Pagination struct {
 }
 
 type DBEntry struct {
-	ID               int              `json:"id"`
-	UUID             string           `json:"uuid"`
-	Lemma            string           `json:"lemma"`
-	CommonalityScore int              `json:"commonalityScore" db:"commonality_score"`
-	Orthography      sql.NullString   `json:"orthography"`
-	Speech           string           `json:"speech"`
-	Senses           []Sense          `json:"senses"`
-	GrammarValues    []GrammarValues  `json:"grammarValues"`
-	AdditionalInfo   []AdditionalInfo `json:"additionalInfo"`
+	ID               int                `json:"id"`
+	UUID             string             `json:"uuid"`
+	Lemma            string             `json:"lemma"`
+	CommonalityScore int                `json:"commonalityScore" db:"commonality_score"`
+	Orthography      sql.NullString     `json:"orthography"`
+	Speech           string             `json:"speech"`
+	Senses           []Sense            `json:"senses"`
+	GrammarValues    []DBGrammarValues  `json:"grammarValues"`
+	AdditionalInfo   []DBAdditionalInfo `json:"additionalInfo"`
 }
 
 // region Gin URI models
@@ -44,15 +44,15 @@ type EntriesResponse struct {
 
 // Entry A lexicon entry provided for an API output
 type Entry struct {
-	ID               int              `json:"-"`
-	UUID             string           `json:"uuid"`
-	Lemma            string           `json:"lemma"`
-	CommonalityScore int              `json:"commonalityScore" db:"commonality_score"`
-	Orthography      string           `json:"orthography"`
-	Speech           string           `json:"speech"`
-	Senses           []Sense          `json:"senses"`
-	GrammarValues    []GrammarValues  `json:"grammarValues"`
-	AdditionalInfo   []AdditionalInfo `json:"additionalInfo"`
+	ID               int                `json:"-"`
+	UUID             string             `json:"uuid"`
+	Lemma            string             `json:"lemma"`
+	CommonalityScore int                `json:"commonalityScore" db:"commonality_score"`
+	Orthography      string             `json:"orthography"`
+	Speech           string             `json:"speech"`
+	Senses           []Sense            `json:"senses"`
+	GrammarValues    []APIGrammarValues `json:"grammarValues"`
+	AdditionalInfo   APIAdditionalInfo  `json:"additionalInfo"`
 }
 
 // DBSearchKeyResult A DB query result on a search_keys table, ultimately used in returning lexicon entries
@@ -76,23 +76,42 @@ type Sense struct {
 	Order   int    `db:"order" json:"order"`
 }
 
-type AdditionalInfo struct {
-	ID        int            `db:"id" json:"-"`
-	UUID      string         `db:"uuid" json:"uuid"`
-	EntryID   int            `db:"entry_id" json:"-"`
-	Age       sql.NullString `db:"age" json:"age"`
-	Context   sql.NullString `db:"context" json:"context"`
-	Frequency sql.NullString `db:"frequency" json:"frequency"`
-	Geography sql.NullString `db:"geography" json:"geography"`
-	Source    sql.NullString `db:"source" json:"source"`
+type DBAdditionalInfo struct {
+	ID        int            `db:"id"`
+	UUID      string         `db:"uuid"`
+	EntryID   int            `db:"entry_id"`
+	Age       sql.NullString `db:"age"`
+	Context   sql.NullString `db:"context"`
+	Frequency sql.NullString `db:"frequency"`
+	Geography sql.NullString `db:"geography"`
+	Source    sql.NullString `db:"source"`
 }
 
-type GrammarValues struct {
-	ID           int            `db:"id" json:"-"`
-	UUID         string         `db:"uuid" json:"uuid"`
-	EntryID      int            `db:"entry_id" json:"-"`
-	GrammarKey   string         `db:"grammar_key" json:"grammar_key"`
-	GrammarValue sql.NullString `db:"grammar_value" json:"grammar_value"`
+type DBGrammarValues struct {
+	ID         int            `db:"id"`
+	UUID       string         `db:"uuid"`
+	EntryID    int            `db:"entry_id"`
+	GrammarKey string         `db:"grammar_key"`
+	Value      sql.NullString `db:"value"`
+}
+
+type APIAdditionalInfo struct {
+	ID        int    `db:"id" json:"-"`
+	UUID      string `db:"uuid" json:"uuid"`
+	EntryID   int    `db:"entry_id" json:"-"`
+	Age       string `db:"age" json:"age"`
+	Context   string `db:"context" json:"context"`
+	Frequency string `db:"frequency" json:"frequency"`
+	Geography string `db:"geography" json:"geography"`
+	Source    string `db:"source" json:"source"`
+}
+
+type APIGrammarValues struct {
+	ID         int    `db:"id" json:"-"`
+	UUID       string `db:"uuid" json:"uuid"`
+	EntryID    int    `db:"entry_id" json:"-"`
+	GrammarKey string `db:"grammar_key" json:"grammar_key"`
+	Value      string `db:"value" json:"value"`
 }
 
 //
