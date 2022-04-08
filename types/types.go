@@ -73,11 +73,7 @@ type Sense struct {
 	UUID    string `db:"uuid" json:"uuid"`
 	EntryID int    `db:"entry_id" json:"-"`
 	Sense   string `db:"sense" json:"sense"`
-<<<<<<< HEAD:types/types.go
 	Order   int    `db:"order" json:"order"`
-=======
-	order   int    `db:"order" json:"order"`
->>>>>>> d4a4370426e3976b0b35b3a1451ab0883fd8911f:cmd/types.go
 }
 
 type AdditionalInfo struct {
