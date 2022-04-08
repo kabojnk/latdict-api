@@ -21,6 +21,7 @@ type QueryFilter struct {
 	Voices          []string `json:"voices"`
 	Declensions     []string `json:"declensions"`
 	Genders         []string `json:"genders"`
+	IncludeSenses   bool     `json:"includeSenses"`
 }
 
 func (queryFilter *QueryFilter) InitWithQueryString(values url.Values) {
@@ -40,4 +41,5 @@ func (queryFilter *QueryFilter) InitWithQueryString(values url.Values) {
 	queryFilter.Voices = strings.Split(strings.TrimSpace(values.Get(query_param.VOICES)), ",")
 	queryFilter.Declensions = strings.Split(strings.TrimSpace(values.Get(query_param.DECLENSIONS)), ",")
 	queryFilter.Genders = strings.Split(strings.TrimSpace(values.Get(query_param.GENDERS)), ",")
+	queryFilter.IncludeSenses, _ = strconv.ParseBool(values.Get(query_param.INCLUDE_SENSES))
 }

@@ -1,4 +1,4 @@
-package main
+package types
 
 import (
 	"database/sql"
@@ -19,13 +19,23 @@ type Pagination struct {
 }
 
 type DBEntry struct {
-	ID               string         `json:"id"`
-	UUID             string         `json:"uuid"`
-	Lemma            string         `json:"lemma"`
-	CommonalityScore int            `json:"commonalityScore" db:"commonality_score"`
-	Orthography      sql.NullString `json:"orthography"`
-	Speech           string         `json:"speech"`
+	ID               int              `json:"id"`
+	UUID             string           `json:"uuid"`
+	Lemma            string           `json:"lemma"`
+	CommonalityScore int              `json:"commonalityScore" db:"commonality_score"`
+	Orthography      sql.NullString   `json:"orthography"`
+	Speech           string           `json:"speech"`
+	Senses           []Sense          `json:"senses"`
+	GrammarValues    []GrammarValues  `json:"grammarValues"`
+	AdditionalInfo   []AdditionalInfo `json:"additionalInfo"`
 }
+
+// region Gin URI models
+type EntryURI struct {
+	EntryUUID string `uri:"entryUUID" binding:"required,uuid"`
+}
+
+// endregion Gin URI models
 
 type EntriesResponse struct {
 	Pagination Pagination `json:"pagination"`
@@ -34,11 +44,15 @@ type EntriesResponse struct {
 
 // Entry A lexicon entry provided for an API output
 type Entry struct {
-	UUID             string `json:"uuid"`
-	Lemma            string `json:"lemma"`
-	CommonalityScore int    `json:"commonalityScore" db:"commonality_score"`
-	Orthography      string `json:"orthography"`
-	Speech           string `json:"speech"`
+	ID               int              `json:"-"`
+	UUID             string           `json:"uuid"`
+	Lemma            string           `json:"lemma"`
+	CommonalityScore int              `json:"commonalityScore" db:"commonality_score"`
+	Orthography      string           `json:"orthography"`
+	Speech           string           `json:"speech"`
+	Senses           []Sense          `json:"senses"`
+	GrammarValues    []GrammarValues  `json:"grammarValues"`
+	AdditionalInfo   []AdditionalInfo `json:"additionalInfo"`
 }
 
 // DBSearchKeyResult A DB query result on a search_keys table, ultimately used in returning lexicon entries
@@ -52,6 +66,33 @@ type DBSearchKeyResult struct {
 	StartingMatch    int    `db:"starting_match"`
 	PartialMatch     int    `db:"partial_match"`
 	SearchKeyLength  int    `db:"search_key_length"`
+}
+
+type Sense struct {
+	ID      int    `db:"id" json:"-"`
+	UUID    string `db:"uuid" json:"uuid"`
+	EntryID int    `db:"entry_id" json:"-"`
+	Sense   string `db:"sense" json:"sense"`
+	Order   int    `db:"order" json:"order"`
+}
+
+type AdditionalInfo struct {
+	ID        int            `db:"id" json:"-"`
+	UUID      string         `db:"uuid" json:"uuid"`
+	EntryID   int            `db:"entry_id" json:"-"`
+	Age       sql.NullString `db:"age" json:"age"`
+	Context   sql.NullString `db:"context" json:"context"`
+	Frequency sql.NullString `db:"frequency" json:"frequency"`
+	Geography sql.NullString `db:"geography" json:"geography"`
+	Source    sql.NullString `db:"source" json:"source"`
+}
+
+type GrammarValues struct {
+	ID           int            `db:"id" json:"-"`
+	UUID         string         `db:"uuid" json:"uuid"`
+	EntryID      int            `db:"entry_id" json:"-"`
+	GrammarKey   string         `db:"grammar_key" json:"grammar_key"`
+	GrammarValue sql.NullString `db:"grammar_value" json:"grammar_value"`
 }
 
 //
