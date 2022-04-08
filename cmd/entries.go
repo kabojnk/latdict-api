@@ -57,6 +57,10 @@ func getEntriesFromDB(client db.DBClient, pagination types.Pagination, filter qu
 	// @TODO: See if this is more performant than doing a single loop with single SQL queries, or something where we
 	//        can get by with one less loop without violating some of Go's mutation limitations.
 	if filter.IncludeSenses {
+<<<<<<< HEAD
+=======
+		fmt.Printf("Include senses: %t", filter.IncludeSenses)
+>>>>>>> d4a4370426e3976b0b35b3a1451ab0883fd8911f
 		var entryIDs []int
 		for _, entry := range entries {
 			entryIDs = append(entryIDs, entry.ID)
@@ -95,11 +99,16 @@ func getEntry(c *gin.Context) {
 		Speech:           dbEntry.Speech,
 		Orthography:      orthography,
 	}
+<<<<<<< HEAD
 	fmt.Printf("EntryID: %d\n", dbEntry.ID)
 	if filter.IncludeSenses {
 		senses := client.GetSenseForEntryID(dbEntry.ID)
 		fmt.Printf("senses: %v\n", senses)
 		//entry.Senses = senses[dbEntry.ID]
+=======
+	if filter.IncludeSenses {
+		
+>>>>>>> d4a4370426e3976b0b35b3a1451ab0883fd8911f
 	}
 
 	c.IndentedJSON(http.StatusOK, entry)

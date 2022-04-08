@@ -65,7 +65,11 @@ func (searchCache *SearchCache) SaveCache(language string, term string, doesRequ
 func (searchCache *SearchCache) GetCache(language string, term string, doesRequireExactMatch bool, pageNum int, pageSize int) (types.EntriesResponse, error) {
 	ctx := context.Background()
 	key := GetSearchCacheKey(language, term, doesRequireExactMatch, pageNum, pageSize)
+<<<<<<< HEAD
 	fmt.Printf("Looking up cache entry for key: %s", key)
+=======
+	fmt.Printf("Lookupg up cache entry for key: %s", key)
+>>>>>>> d4a4370426e3976b0b35b3a1451ab0883fd8911f
 	var entriesResponse types.EntriesResponse
 	data, err := searchCache.RedisClient.Get(ctx, key).Bytes()
 	if err != nil {
