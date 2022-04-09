@@ -15,7 +15,17 @@ import (
 const DEFAULT_PAGE_SIZE = 20
 const MAX_PAGE_SIZE = 200
 
-// Gets all entries that matches a particular search filter
+// @BasePath /entries
+
+// PingExample godoc
+// @Summary Get entries
+// @Schemes
+// @Description Gets Latin dictionary entries
+// @Tags get
+// @Accept json
+// @Produce json
+// @Success 200 {object} EntriesResponse
+// @Router /entries [get]
 func getEntries(c *gin.Context) {
 
 	client := db.DBClient{}

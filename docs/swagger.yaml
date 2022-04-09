@@ -1,0 +1,19 @@
+info:
+  contact: {}
+paths:
+  /entries:
+    get:
+      consumes:
+      - application/json
+      description: Gets Latin dictionary entries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: EntryResponse
+      summary: Get entries
+      tags:
+      - get
+swagger: "2.0"

@@ -15,7 +15,23 @@ There is a `.env.example` file that can be copied to a new `.env` file and fille
 
 1. Ideally, you would have **Go 1.16+** installed.
 2. Run `go run cmd/.` (`main.go` is inside the `cmd/` directory)
-3. If you wish to do hot reloading, the API supports `[air](https://github.com/cosmtrek/air)`. Once installed, just run `air` in the project root.
+3. If you wish to do hot reloading, the API supports [air](https://github.com/cosmtrek/air). Once installed, just run `air` in the project root.
+
+## Swagger API documentation
+ 
+The API uses [gin-swagger](https://github.com/swaggo/gin-swagger).
+
+### Viewing documentation
+
+1. Run the server
+2. Go to http://localhost:8000/swagger/index.html in a browser to view the API documentation
+
+### Generating (or regenerating) documentation
+
+Documentation is based primarily on code comments that define the various endpoint handlers. To generate new documentation:
+
+1. Install [Swag for Go](https://github.com/swaggo/swag): `go get -u github.com/swaggo/swag/cmd/swag`
+2. Type `swag init --parseDependency` -- the `--parseDependency` flag is important so that it can find the typedef for the response models
 
 ## Notes on types
 
