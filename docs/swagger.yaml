@@ -1,3 +1,78 @@
+definitions:
+  types.APIAdditionalInfo:
+    properties:
+      age:
+        type: string
+      context:
+        type: string
+      frequency:
+        type: string
+      geography:
+        type: string
+      source:
+        type: string
+      uuid:
+        type: string
+    type: object
+  types.APIGrammarValues:
+    properties:
+      grammar_key:
+        type: string
+      uuid:
+        type: string
+      value:
+        type: string
+    type: object
+  types.EntriesResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/types.Entry'
+        type: array
+      pagination:
+        $ref: '#/definitions/types.Pagination'
+    type: object
+  types.Entry:
+    properties:
+      additionalInfo:
+        $ref: '#/definitions/types.APIAdditionalInfo'
+      commonalityScore:
+        type: integer
+      grammarValues:
+        items:
+          $ref: '#/definitions/types.APIGrammarValues'
+        type: array
+      lemma:
+        type: string
+      orthography:
+        type: string
+      senses:
+        items:
+          $ref: '#/definitions/types.Sense'
+        type: array
+      speech:
+        type: string
+      uuid:
+        type: string
+    type: object
+  types.Pagination:
+    properties:
+      TotalNumPages:
+        type: integer
+      pageNum:
+        type: integer
+      pageSize:
+        type: integer
+    type: object
+  types.Sense:
+    properties:
+      order:
+        type: integer
+      sense:
+        type: string
+      uuid:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -12,8 +87,23 @@ paths:
         "200":
           description: OK
           schema:
-            type: EntryResponse
+            $ref: '#/definitions/types.EntriesResponse'
       summary: Get entries
+      tags:
+      - get
+  /entries/:entryUUID:
+    get:
+      consumes:
+      - application/json
+      description: Gets Latin dictionary entry by its UUID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Entry'
+      summary: Get entry by UUID
       tags:
       - get
 swagger: "2.0"

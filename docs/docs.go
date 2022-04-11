@@ -33,9 +33,148 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "EntryResponse"
+                            "$ref": "#/definitions/types.EntriesResponse"
                         }
                     }
+                }
+            }
+        },
+        "/entries/:entryUUID": {
+            "get": {
+                "description": "Gets Latin dictionary entry by its UUID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get"
+                ],
+                "summary": "Get entry by UUID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Entry"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "types.APIAdditionalInfo": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "string"
+                },
+                "context": {
+                    "type": "string"
+                },
+                "frequency": {
+                    "type": "string"
+                },
+                "geography": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.APIGrammarValues": {
+            "type": "object",
+            "properties": {
+                "grammar_key": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.EntriesResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.Entry"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/types.Pagination"
+                }
+            }
+        },
+        "types.Entry": {
+            "type": "object",
+            "properties": {
+                "additionalInfo": {
+                    "$ref": "#/definitions/types.APIAdditionalInfo"
+                },
+                "commonalityScore": {
+                    "type": "integer"
+                },
+                "grammarValues": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.APIGrammarValues"
+                    }
+                },
+                "lemma": {
+                    "type": "string"
+                },
+                "orthography": {
+                    "type": "string"
+                },
+                "senses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.Sense"
+                    }
+                },
+                "speech": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Pagination": {
+            "type": "object",
+            "properties": {
+                "TotalNumPages": {
+                    "type": "integer"
+                },
+                "pageNum": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.Sense": {
+            "type": "object",
+            "properties": {
+                "order": {
+                    "type": "integer"
+                },
+                "sense": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
                 }
             }
         }

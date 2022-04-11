@@ -24,7 +24,7 @@ const MAX_PAGE_SIZE = 200
 // @Tags get
 // @Accept json
 // @Produce json
-// @Success 200 {object} EntriesResponse
+// @Success 200 {object} types.EntriesResponse
 // @Router /entries [get]
 func getEntries(c *gin.Context) {
 
@@ -83,6 +83,15 @@ func getEntriesFromDB(client db.DBClient, pagination types.Pagination, filter qu
 	return response
 }
 
+// PingExample godoc
+// @Summary Get entry by UUID
+// @Schemes
+// @Description Gets Latin dictionary entry by its UUID
+// @Tags get
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.Entry
+// @Router /entries/:entryUUID [get]
 func getEntry(c *gin.Context) {
 	var entryURI types.EntryURI
 	if err := c.ShouldBindUri(&entryURI); err != nil {
